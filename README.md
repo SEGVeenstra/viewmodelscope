@@ -1,14 +1,8 @@
-# viewmodel
+# WiewModel
 
-A new Flutter package project.
+ViewModel will help you seperate your Views and Logic.
 
-## Getting Started
+## Widgets
 
-This project is a starting point for a Dart
-[package](https://flutter.dev/developing-packages/),
-a library module containing code that can be shared easily across
-multiple Flutter or Dart projects.
-
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.dev/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+You can incorporate ViewModel's widgets into your Widget tree to
+keep your seperations between views and logic very clearly.

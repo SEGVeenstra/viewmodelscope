@@ -1,5 +1,5 @@
 name: viewmodel
-description: A new Flutter package project.
+description: A collection of widgets that helps you separate view from logic.
 version: 0.0.1
 author:
 homepage:
