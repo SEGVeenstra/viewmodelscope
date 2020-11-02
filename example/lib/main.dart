@@ -30,35 +30,25 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: CounterViewModel(child: MyHomePage()),
+      home: CounterViewModel(child: CountersPage()),
     );
   }
 }
 
-class MyHomePage extends ViewModelConsumer<CounterViewModel> {
+class CountersPage extends ViewModelConsumer<CounterViewModel> {
   @override
   Widget buildView(BuildContext context, CounterViewModel viewModel) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('ViewModel Sample'),
+        title: Text('CountersPage'),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            ValueListenableBuilder<int>(
-                valueListenable: viewModel.counter,
-                builder: (context, number, child) {
-                  return Text(
-                    '$number',
-                    style: Theme.of(context).textTheme.headline4,
-                  );
-                }),
-          ],
-        ),
+      body: Column(
+        children: [
+          TextualCounterWidget(),
+          TextualCounterWidget(),
+          TextualCounterWidget(),
+          VisualCounterWidget()
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -68,5 +58,36 @@ class MyHomePage extends ViewModelConsumer<CounterViewModel> {
         child: Icon(Icons.add),
       ),
     );
+  }
+}
+
+class TextualCounterWidget extends ViewModelConsumer<CounterViewModel> {
+  @override
+  Widget buildView(BuildContext context, CounterViewModel viewModel) {
+    return Center(
+      child: ValueListenableBuilder<int>(
+          valueListenable: viewModel.counter,
+          builder: (context, count, _) {
+            return Text('Counter: $count');
+          }),
+    );
+  }
+}
+
+class VisualCounterWidget extends ViewModelConsumer<CounterViewModel> {
+  @override
+  Widget buildView(BuildContext context, CounterViewModel viewModel) {
+    return ValueListenableBuilder<int>(
+        valueListenable: viewModel.counter,
+        builder: (context, count, _) {
+          return Row(
+            children: List.generate(
+                count,
+                (index) => Container(
+                      color: Colors.amber,
+                      child: Text('$index'),
+                    )),
+          );
+        });
   }
 }
