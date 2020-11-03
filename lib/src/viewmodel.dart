@@ -1,14 +1,13 @@
 import 'package:flutter/widgets.dart';
 
-abstract class ViewModel extends InheritedWidget {
-  ViewModel({@required Widget child, Key key}) : super(child: child, key: key);
+abstract class ViewModel extends StatelessWidget {
+  final Widget child;
 
-  @override
-  bool updateShouldNotify(InheritedWidget oldWidget) {
-    return oldWidget != this;
-  }
+  ViewModel({@required this.child, Key key}) : super(key: key);
+
+  Widget build(BuildContext context) => child;
 
   static T of<T extends ViewModel>(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<T>();
+    return context.findAncestorWidgetOfExactType<T>();
   }
 }
