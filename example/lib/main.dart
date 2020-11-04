@@ -1,23 +1,146 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:viewmodel/viewmodel.dart';
 
 void main() {
   runApp(MyApp());
 }
 
-/// A [ViewModel] which will keep track of a counter.
-///
-/// Expose [counter] to get the value and
-/// defines [increment] to increment the [counter].
-class CounterViewModel extends ViewModel {
-  final ValueNotifier<int> _counter = ValueNotifier(0);
-  ValueListenable<int> get counter => _counter;
+class ChartViewModel extends ViewModel {
+  final _rng = Random();
 
-  CounterViewModel({Widget child}) : super(child: child);
+  final ValueNotifier<List<ChartData>> _salesData = ValueNotifier([
+    ChartData(2018, 35),
+    ChartData(2019, 28),
+    ChartData(2020, 34),
+  ]);
+  ValueListenable<List<ChartData>> get chartData => _salesData;
 
-  increment() {
-    _counter.value = _counter.value + 1;
+  ChartViewModel({Widget child}) : super(child: child);
+
+  refreshData() {
+    _salesData.value = [
+      ChartData(2018, _rng.nextDouble() * 10),
+      ChartData(2019, _rng.nextDouble() * 10),
+      ChartData(2020, _rng.nextDouble() * 10),
+    ];
+  }
+}
+
+class ChartData {
+  ChartData(this.year, this.values);
+  final int year;
+  final double values;
+}
+
+class PieChart extends ViewModelConsumer<ChartViewModel> {
+  @override
+  Widget buildView(BuildContext context, ChartViewModel viewModel) {
+    return Stack(
+      children: [
+        ValueListenableBuilder<List<ChartData>>(
+            valueListenable: viewModel.chartData,
+            builder: (context, data, _) {
+              return SfCircularChart(
+                series: [
+                  PieSeries<ChartData, int>(
+                      dataSource: data,
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.values)
+                ],
+              );
+            }),
+        InkWell(
+          onTap: () {
+            viewModel.refreshData();
+          },
+        )
+      ],
+    );
+  }
+}
+
+class DoughnutChart extends ViewModelConsumer<ChartViewModel> {
+  @override
+  Widget buildView(BuildContext context, ChartViewModel viewModel) {
+    return Stack(
+      children: [
+        ValueListenableBuilder<List<ChartData>>(
+            valueListenable: viewModel.chartData,
+            builder: (context, data, _) {
+              return SfCircularChart(
+                series: [
+                  DoughnutSeries<ChartData, int>(
+                      dataSource: data,
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.values)
+                ],
+              );
+            }),
+        InkWell(
+          onTap: () {
+            viewModel.refreshData();
+          },
+        )
+      ],
+    );
+  }
+}
+
+class LineChart extends ViewModelConsumer<ChartViewModel> {
+  @override
+  Widget buildView(BuildContext context, ChartViewModel viewModel) {
+    return Stack(
+      children: [
+        ValueListenableBuilder<List<ChartData>>(
+            valueListenable: viewModel.chartData,
+            builder: (context, data, _) {
+              return SfCartesianChart(
+                series: [
+                  AreaSeries<ChartData, int>(
+                      dataSource: data,
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.values)
+                ],
+              );
+            }),
+        InkWell(
+          onTap: () {
+            viewModel.refreshData();
+          },
+        )
+      ],
+    );
+  }
+}
+
+class ColumnChart extends ViewModelConsumer<ChartViewModel> {
+  @override
+  Widget buildView(BuildContext context, ChartViewModel viewModel) {
+    return Stack(
+      children: [
+        ValueListenableBuilder<List<ChartData>>(
+            valueListenable: viewModel.chartData,
+            builder: (context, data, _) {
+              return SfCartesianChart(
+                series: [
+                  ColumnSeries<ChartData, int>(
+                      dataSource: data,
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.values)
+                ],
+              );
+            }),
+        InkWell(
+          onTap: () {
+            viewModel.refreshData();
+          },
+        )
+      ],
+    );
   }
 }
 
@@ -30,64 +153,31 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: CounterViewModel(child: CountersPage()),
-    );
-  }
-}
-
-class CountersPage extends ViewModelConsumer<CounterViewModel> {
-  @override
-  Widget buildView(BuildContext context, CounterViewModel viewModel) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('CountersPage'),
-      ),
-      body: Column(
-        children: [
-          TextualCounterWidget(),
-          TextualCounterWidget(),
-          TextualCounterWidget(),
-          VisualCounterWidget()
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          viewModel.increment();
-        },
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('ViewModel Sample'),
+        ),
+        body: ChartViewModel(
+          child: Column(mainAxisSize: MainAxisSize.max, children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(child: LineChart()),
+                  Expanded(child: DoughnutChart()),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(child: PieChart()),
+                  Expanded(child: ColumnChart()),
+                ],
+              ),
+            )
+          ]),
+        ),
       ),
     );
-  }
-}
-
-class TextualCounterWidget extends ViewModelConsumer<CounterViewModel> {
-  @override
-  Widget buildView(BuildContext context, CounterViewModel viewModel) {
-    return Center(
-      child: ValueListenableBuilder<int>(
-          valueListenable: viewModel.counter,
-          builder: (context, count, _) {
-            return Text('Counter: $count');
-          }),
-    );
-  }
-}
-
-class VisualCounterWidget extends ViewModelConsumer<CounterViewModel> {
-  @override
-  Widget buildView(BuildContext context, CounterViewModel viewModel) {
-    return ValueListenableBuilder<int>(
-        valueListenable: viewModel.counter,
-        builder: (context, count, _) {
-          return Row(
-            children: List.generate(
-                count,
-                (index) => Container(
-                      color: Colors.amber,
-                      child: Text('$index'),
-                    )),
-          );
-        });
   }
 }
