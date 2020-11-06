@@ -23,18 +23,13 @@ class ColorWidget extends ViewModelConsumer<ColorViewModel> {
   @override
   Widget buildView(BuildContext context, ColorViewModel viewModel) {
     return InkWell(
-      onTap: () {
-        viewModel.refreshData();
-      },
-      child: ValueListenableBuilder<Color>(
-          valueListenable: viewModel.state,
-          builder: (context, color, _) {
-            return AnimatedContainer(
-              duration: Duration(milliseconds: 500),
-              color: color,
-            );
-          }),
-    );
+        onTap: () {
+          viewModel.refreshData();
+        },
+        child: AnimatedContainer(
+          duration: Duration(milliseconds: 200),
+          color: viewModel.state,
+        ));
   }
 }
 
@@ -65,6 +60,8 @@ class MyApp extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(child: ColorWidget()),
+                  Expanded(child: ColorViewModel(child: ColorWidget())),
+                  Expanded(child: ColorViewModel(child: ColorWidget())),
                 ],
               ),
             )
