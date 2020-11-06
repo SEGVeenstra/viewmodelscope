@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:viewmodel/viewmodel.dart';
 
@@ -8,18 +7,15 @@ void main() {
   runApp(MyApp());
 }
 
-class ColorViewModel extends ViewModel {
+class ColorViewModel extends ViewModel<Color> {
   final _rng = Random();
-
-  final ValueNotifier<Color> _color = ValueNotifier(Colors.blue);
-  ValueListenable<Color> get color => _color;
 
   ColorViewModel({Widget child}) : super(child: child) {
     refreshData();
   }
 
   refreshData() {
-    _color.value = Color(_rng.nextInt(0xffffff)).withAlpha(255);
+    setState(Color(_rng.nextInt(0xffffff)).withAlpha(255));
   }
 }
 
@@ -31,7 +27,7 @@ class ColorWidget extends ViewModelConsumer<ColorViewModel> {
         viewModel.refreshData();
       },
       child: ValueListenableBuilder<Color>(
-          valueListenable: viewModel.color,
+          valueListenable: viewModel.state,
           builder: (context, color, _) {
             return AnimatedContainer(
               duration: Duration(milliseconds: 500),
