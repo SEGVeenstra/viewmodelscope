@@ -1,6 +1,6 @@
-# WiewModel
+# ViewModel
 
-ViewModel will help you seperate your Views and Logic.
+ViewModel will help you separate your Views and Logic.
 
 ## Widgets
 
