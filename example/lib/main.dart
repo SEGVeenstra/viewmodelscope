@@ -7,28 +7,31 @@ void main() {
   runApp(MyApp());
 }
 
-class ColorViewModel extends ViewModel<Color> {
+class NumberViewModel extends ViewModel<int> {
   final _rng = Random();
 
-  ColorViewModel({Widget child}) : super(child: child) {
-    refreshData();
-  }
+  NumberViewModel({Widget child}) : super(child: child, initialState: 0);
 
-  refreshData() {
-    setState(Color(_rng.nextInt(0xffffff)).withAlpha(255));
+  randomNumber() {
+    setState(_rng.nextInt(10));
   }
 }
 
-class ColorWidget extends ViewModelConsumer<ColorViewModel> {
+class NumberWidget extends ViewModelConsumer<NumberViewModel, int> {
   @override
-  Widget buildView(BuildContext context, ColorViewModel viewModel) {
+  Widget buildView(BuildContext context, int state) {
     return InkWell(
         onTap: () {
-          viewModel.refreshData();
+          viewModelOf(context).randomNumber();
         },
         child: AnimatedContainer(
           duration: Duration(milliseconds: 200),
-          color: viewModel.state,
+          child: Center(
+            child: Text(
+              '$state',
+              style: TextStyle(fontSize: 64),
+            ),
+          ),
         ));
   }
 }
@@ -46,22 +49,22 @@ class MyApp extends StatelessWidget {
         appBar: AppBar(
           title: Text('ViewModel Sample'),
         ),
-        body: ColorViewModel(
+        body: NumberViewModel(
           child: Column(mainAxisSize: MainAxisSize.max, children: [
             Expanded(
               child: Row(
                 children: [
-                  Expanded(child: ColorWidget()),
-                  Expanded(child: ColorViewModel(child: ColorWidget())),
+                  Expanded(child: NumberWidget()),
+                  Expanded(child: NumberViewModel(child: NumberWidget())),
                 ],
               ),
             ),
             Expanded(
               child: Row(
                 children: [
-                  Expanded(child: ColorWidget()),
-                  Expanded(child: ColorViewModel(child: ColorWidget())),
-                  Expanded(child: ColorViewModel(child: ColorWidget())),
+                  Expanded(child: NumberWidget()),
+                  Expanded(child: NumberViewModel(child: NumberWidget())),
+                  Expanded(child: NumberWidget()),
                 ],
               ),
             )

@@ -26,7 +26,8 @@ abstract class ViewModel<T> extends StatelessWidget {
   final _state = ValueNotifier<T>(null);
   T get state => _state.value;
 
-  ViewModel({@required this.child, Key key, T initialState}) : super(key: key) {
+  ViewModel({@required this.child, Key key, @required T initialState})
+      : super(key: key) {
     _state.value = initialState;
   }
 
@@ -65,20 +66,21 @@ abstract class ViewModel<T> extends StatelessWidget {
 ///   }
 /// }
 /// ```
-abstract class ViewModelConsumer<T extends ViewModel> extends StatelessWidget {
+abstract class ViewModelConsumer<TViewModel extends ViewModel, TState>
+    extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = viewModelOf(context);
     return ValueListenableBuilder(
         valueListenable: viewModel._state,
         builder: (context, state, _) {
-          return buildView(context, viewModel);
+          return buildView(context, state);
         });
   }
 
-  Widget buildView(BuildContext context, T viewModel);
+  Widget buildView(BuildContext context, TState state);
 
-  T viewModelOf(BuildContext context) {
-    return ViewModel.of<T>(context);
+  TViewModel viewModelOf(BuildContext context) {
+    return ViewModel.of<TViewModel>(context);
   }
 }
