@@ -25,6 +25,7 @@ abstract class ViewModel<T> extends StatelessWidget {
   final Widget child;
   final _state = ValueNotifier<T>(null);
   T get state => _state.value;
+  ValueListenable get listenable => _state;
 
   ViewModel({@required this.child, Key key, @required T initialState})
       : super(key: key) {
@@ -40,6 +41,10 @@ abstract class ViewModel<T> extends StatelessWidget {
 
   static T of<T extends ViewModel>(BuildContext context) {
     return context.findAncestorWidgetOfExactType<T>();
+  }
+
+  static ViewModel<Tstate> forState<Tstate>(BuildContext context) {
+    return context.findAncestorWidgetOfExactType<ViewModel<Tstate>>();
   }
 }
 
@@ -82,5 +87,32 @@ abstract class ViewModelConsumer<TViewModel extends ViewModel, TState>
 
   TViewModel viewModelOf(BuildContext context) {
     return ViewModel.of<TViewModel>(context);
+  }
+}
+
+class ViewModelListener<TViewModel extends ViewModel, TState>
+    extends StatefulWidget {
+  final Widget child;
+  final dynamic Function(dynamic) listener;
+
+  ViewModelListener({this.child, @required this.listener});
+
+  @override
+  _ViewModelListenerState createState() =>
+      _ViewModelListenerState<TViewModel, TState>();
+}
+
+class _ViewModelListenerState<TViewModel extends ViewModel, TState>
+    extends State<ViewModelListener> {
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+        child: widget.child,
+        valueListenable: ViewModel.of<TViewModel>(context).listenable,
+        builder: (context, state, child) {
+          WidgetsBinding.instance
+              .addPostFrameCallback((_) => widget.listener(state));
+          return child;
+        });
   }
 }
