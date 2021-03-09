@@ -1,6 +1,3 @@
-import 'dart:math';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:viewmodel/viewmodel.dart';
 
@@ -8,37 +5,16 @@ void main() {
   runApp(MyApp());
 }
 
-class ColorViewModel extends ViewModel {
-  final _rng = Random();
+// Define your ViewModel, pass it the Type of the State
+class NumberViewModel extends ViewModel<int> {
+  NumberViewModel() : super(initialState: 0);
 
-  final ValueNotifier<Color> _color = ValueNotifier(Colors.blue);
-  ValueListenable<Color> get color => _color;
-
-  ColorViewModel({Widget child}) : super(child: child) {
-    refreshData();
+  increment() {
+    setState(state + 1);
   }
 
-  refreshData() {
-    _color.value = Color(_rng.nextInt(0xffffff)).withAlpha(255);
-  }
-}
-
-class ColorWidget extends ViewModelConsumer<ColorViewModel> {
-  @override
-  Widget buildView(BuildContext context, ColorViewModel viewModel) {
-    return InkWell(
-      onTap: () {
-        viewModel.refreshData();
-      },
-      child: ValueListenableBuilder<Color>(
-          valueListenable: viewModel.color,
-          builder: (context, color, _) {
-            return AnimatedContainer(
-              duration: Duration(milliseconds: 500),
-              color: color,
-            );
-          }),
-    );
+  decrement() {
+    setState(state - 1);
   }
 }
 
@@ -49,31 +25,68 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('ViewModel Sample'),
-        ),
-        body: ColorViewModel(
-          child: Column(mainAxisSize: MainAxisSize.max, children: [
-            Expanded(
-              child: Row(
-                children: [
-                  Expanded(child: ColorWidget()),
-                  Expanded(child: ColorViewModel(child: ColorWidget())),
-                ],
+      // Set a ViewModelScope and pass it in an instance of the NumberViewModel
+      home: ViewModelScope<NumberViewModel>(
+          viewModel: NumberViewModel(),
+          child: MyHomePage(title: 'Flutter Demo Home Page')),
+    );
+  }
+}
+
+class MyHomePage extends StatelessWidget {
+  MyHomePage({Key key, this.title}) : super(key: key);
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'You have pushed the button this many times:',
+            ),
+            // Use a ViewModelConsumer to update the UI
+            ViewModelConsumer<NumberViewModel, int>(
+              builder: (context, state, _) => Text(
+                '$state',
+                style: Theme.of(context).textTheme.headline4,
               ),
             ),
-            Expanded(
-              child: Row(
-                children: [
-                  Expanded(child: ColorWidget()),
-                ],
-              ),
-            )
-          ]),
+          ],
         ),
+      ),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: () {
+              // Use ViewModelScope.of to find the nearest ViewModelScope of a
+              // specific Type to call methods on it.
+              ViewModelScope.of<NumberViewModel>(context).increment();
+            },
+            tooltip: 'Increment',
+            child: Icon(Icons.add),
+          ),
+          SizedBox(
+            height: 10,
+          ),
+          FloatingActionButton(
+            onPressed: () {
+              // Use ViewModelScope.of to find the nearest ViewModelScope of a
+              // specific Type to call methods on it.
+              ViewModelScope.of<NumberViewModel>(context).decrement()();
+            },
+            tooltip: 'Increment',
+            child: Icon(Icons.remove),
+          ),
+        ],
       ),
     );
   }
