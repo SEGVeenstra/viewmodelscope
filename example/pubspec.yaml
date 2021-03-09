@@ -24,8 +24,8 @@ dependencies:
   flutter:
     sdk: flutter
 
-  viewmodel: 
-    path: ../../viewmodel
+  viewmodelscope: 
+    path: ../../viewmodelscope
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

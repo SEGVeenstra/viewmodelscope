@@ -149,7 +149,7 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.0"
-  viewmodel:
+  viewmodelscope:
     dependency: "direct main"
     description:
       path: ".."
