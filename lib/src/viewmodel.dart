@@ -1,118 +1,61 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
-/// A base class that manages the state of a [ViewModel].
-///
-/// You should extend this class and provide actions that can [setState].
-///
-/// Use a [ViewModelConsumer] to consume the ViewModel
-///
-/// ### Example
-/// ```
-/// class ColorViewModel extends ViewModel<Color> {
-///   final _rng = Random();
-///
-///   ColorViewModel({Widget child}) : super(child: child) {
-///     refreshData();
-///   }
-///
-///   refreshData() {
-///     setState(Color(_rng.nextInt(0xffffff)).withAlpha(255));
-///   }
-/// }
-/// ```
-abstract class ViewModel<T> extends StatelessWidget {
-  final Widget child;
-  final _state = ValueNotifier<T>(null);
-  T get state => _state.value;
-  ValueListenable get listenable => _state;
+class ViewModelScope<TViewModel extends ViewModel> extends InheritedWidget {
+  final TViewModel viewModel;
 
-  ViewModel({@required this.child, Key key, @required T initialState})
-      : super(key: key) {
-    _state.value = initialState;
+  ViewModelScope({@required Widget child, @required this.viewModel})
+      : super(child: child);
+
+  @override
+  bool updateShouldNotify(covariant ViewModelScope<TViewModel> oldWidget) {
+    return oldWidget.viewModel.state != viewModel.state;
   }
-
-  @protected
-  setState(T state) {
-    _state.value = state;
-  }
-
-  Widget build(BuildContext context) => child;
 
   static T of<T extends ViewModel>(BuildContext context) {
-    return context.findAncestorWidgetOfExactType<T>();
-  }
-
-  static ViewModel<Tstate> forState<Tstate>(BuildContext context) {
-    return context.findAncestorWidgetOfExactType<ViewModel<Tstate>>();
+    final widget = context.findAncestorWidgetOfExactType<ViewModelScope<T>>();
+    assert(widget != null, 'Could not find a ViewModelScope for Type: $T');
+    return widget.viewModel;
   }
 }
 
-/// A base class which is meant for consuming a [ViewModel]
-///
-/// [ViewModelConsumer] will try to find the first parent of the passed in [Type]
-/// and passes it in the [buildView] function where you can use the passed
-/// [ViewModel] to build the Widget based on the [ViewModel.state] and connect
-/// user actions to functions.
-///
-/// ### Example
-/// ```
-/// class ColorWidget extends ViewModelConsumer<ColorViewModel> {
-///   @override
-///   Widget buildView(BuildContext context, ColorViewModel viewModel) {
-///     return InkWell(
-///         onTap: () {
-///           viewModel.refreshData();
-///         },
-///         child: AnimatedContainer(
-///           duration: Duration(milliseconds: 200),
-///           color: viewModel.state,
-///         ));
-///   }
-/// }
-/// ```
-abstract class ViewModelConsumer<TViewModel extends ViewModel, TState>
+abstract class ViewModel<TState> {
+  final ValueNotifier<TState> stateNotifier;
+  TState get state => stateNotifier.value;
+
+  ViewModel({@required TState initialState})
+      : stateNotifier = ValueNotifier(initialState) {
+    assert(initialState != null,
+        "You must provide an initialState for ${this.runtimeType}");
+  }
+
+  setState(TState newState) {
+    stateNotifier.value = newState;
+  }
+}
+
+class ViewModelConsumer<TViewmodel extends ViewModel, TState>
     extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final viewModel = viewModelOf(context);
-    return ValueListenableBuilder(
-        valueListenable: viewModel._state,
-        builder: (context, state, _) {
-          return buildView(context, state);
-        });
-  }
-
-  Widget buildView(BuildContext context, TState state);
-
-  TViewModel viewModelOf(BuildContext context) {
-    return ViewModel.of<TViewModel>(context);
-  }
-}
-
-class ViewModelListener<TViewModel extends ViewModel, TState>
-    extends StatefulWidget {
   final Widget child;
-  final dynamic Function(dynamic) listener;
+  final Widget Function(BuildContext, TState, Widget) builder;
+  final void Function(BuildContext, TState) listener;
 
-  ViewModelListener({this.child, @required this.listener});
+  ViewModelConsumer({this.builder, this.listener, Widget child})
+      : child = child ??= Container();
 
-  @override
-  _ViewModelListenerState createState() =>
-      _ViewModelListenerState<TViewModel, TState>();
-}
-
-class _ViewModelListenerState<TViewModel extends ViewModel, TState>
-    extends State<ViewModelListener> {
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-        child: widget.child,
-        valueListenable: ViewModel.of<TViewModel>(context).listenable,
-        builder: (context, state, child) {
+    return ValueListenableBuilder<TState>(
+      child: child,
+      valueListenable: ViewModelScope.of<TViewmodel>(context).stateNotifier
+          as ValueNotifier<TState>,
+      builder: (context, state, child) {
+        if (listener != null) {
           WidgetsBinding.instance
-              .addPostFrameCallback((_) => widget.listener(state));
-          return child;
-        });
+              .addPostFrameCallback((_) => listener(context, state));
+        }
+        return builder == null ? child : builder(context, state, child);
+      },
+    );
   }
 }
