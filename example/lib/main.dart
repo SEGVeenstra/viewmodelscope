@@ -6,16 +6,29 @@ void main() {
 }
 
 // Define your ViewModel, pass it the Type of the State
-class NumberViewModel extends ViewModel<int> {
-  NumberViewModel() : super(initialState: 0);
+class NumberViewModel extends ViewModel<NumberState> {
+  NumberViewModel()
+      : super(initialState: NumberState(number: 0, canDecrement: false));
 
   increment() {
-    setState(state + 1);
+    final newState = NumberState(number: state.number + 1, canDecrement: true);
+    setState(newState);
   }
 
   decrement() {
-    setState(state - 1);
+    if (!state.canDecrement) return;
+
+    final newState =
+        NumberState(number: state.number - 1, canDecrement: state.number > 1);
+    setState(newState);
   }
+}
+
+class NumberState {
+  final int number;
+  final bool canDecrement;
+
+  NumberState({@required this.number, @required this.canDecrement});
 }
 
 class MyApp extends StatelessWidget {
@@ -53,41 +66,45 @@ class MyHomePage extends StatelessWidget {
               'You have pushed the button this many times:',
             ),
             // Use a ViewModelConsumer to update the UI
-            ViewModelConsumer<NumberViewModel, int>(
+            ViewModelConsumer<NumberViewModel, NumberState>(
               builder: (context, state, _) => Text(
-                '$state',
+                '${state.number}',
                 style: Theme.of(context).textTheme.headline4,
               ),
             ),
           ],
         ),
       ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            onPressed: () {
-              // Use ViewModelScope.of to find the nearest ViewModelScope of a
-              // specific Type to call methods on it.
-              ViewModelScope.of<NumberViewModel>(context).increment();
-            },
-            tooltip: 'Increment',
-            child: Icon(Icons.add),
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          FloatingActionButton(
-            onPressed: () {
-              // Use ViewModelScope.of to find the nearest ViewModelScope of a
-              // specific Type to call methods on it.
-              ViewModelScope.of<NumberViewModel>(context).decrement()();
-            },
-            tooltip: 'Increment',
-            child: Icon(Icons.remove),
-          ),
-        ],
-      ),
+      floatingActionButton: ViewModelConsumer<NumberViewModel, NumberState>(
+          builder: (context, state, _) {
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            FloatingActionButton(
+              onPressed: () {
+                // Use the BuildContext extension to find the nearest ViewModel of a
+                // specific Type to call methods on it.
+                context.vm<NumberViewModel>().increment();
+              },
+              tooltip: 'Increment',
+              child: Icon(Icons.add),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            FloatingActionButton(
+              backgroundColor: state.canDecrement ? null : Colors.grey,
+              onPressed: state.canDecrement
+                  ? () {
+                      context.vm<NumberViewModel>().decrement();
+                    }
+                  : null,
+              tooltip: 'Increment',
+              child: Icon(Icons.remove),
+            ),
+          ],
+        );
+      }),
     );
   }
 }
