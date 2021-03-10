@@ -74,6 +74,8 @@ class MyHomePage extends StatelessWidget {
                 'You have pushed the button this many times:',
               ),
               Text(
+                // Access the ViewModel's state to build your UI.
+                // vm.s is just a shorter notation for vm.state.
                 '${vm.s.number}',
                 style: Theme.of(context).textTheme.headline4,
               ),
@@ -95,6 +97,8 @@ class Fabs extends StatelessWidget {
         FloatingActionButton(
           // You can use the context extension to access the closest ViewModel
           // when not inside the ViewModelConsumer's build function.
+          //
+          // This FAB doesn't update so no need for a ViewModelConsumer
           onPressed: () => context.vm<NumberViewModel>().increment(),
           tooltip: 'Increment',
           child: Icon(Icons.add),
@@ -103,9 +107,16 @@ class Fabs extends StatelessWidget {
           height: 10,
         ),
         ViewModelConsumer<NumberViewModel>(builder: (context, vm, _) {
+          // This FAB disables whenever the number is 0.
+          // To make it update, we use the ViewModelConsumer.
           return FloatingActionButton(
             backgroundColor: vm.s.canDecrement ? null : Colors.grey,
-            onPressed: vm.s.canDecrement ? () => vm.decrement() : null,
+            onPressed: vm.s.canDecrement
+                ? () =>
+                    // Because we are inside the build function we can easily access
+                    // the ViewModel and call functions on it.
+                    vm.decrement()
+                : null,
             tooltip: 'Increment',
             child: Icon(Icons.remove),
           );
