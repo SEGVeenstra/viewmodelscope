@@ -5,30 +5,35 @@ void main() {
   runApp(MyApp());
 }
 
+// Define your State object
+class NumberState {
+  final int number;
+  final bool canDecrement;
+
+  NumberState({@required this.number, @required this.canDecrement});
+}
+
 // Define your ViewModel, pass it the Type of the State
 class NumberViewModel extends ViewModel<NumberState> {
   NumberViewModel()
+      // Pass the initial state for the Viewmodel
       : super(initialState: NumberState(number: 0, canDecrement: false));
 
   increment() {
+    // You can access the previous state to calculate the new state
     final newState = NumberState(number: state.number + 1, canDecrement: true);
+    // Use setState() to set the new state
     setState(newState);
   }
 
   decrement() {
+    // Use the current state to make decisions on how to update the state
     if (!state.canDecrement) return;
 
     final newState =
         NumberState(number: state.number - 1, canDecrement: state.number > 1);
     setState(newState);
   }
-}
-
-class NumberState {
-  final int number;
-  final bool canDecrement;
-
-  NumberState({@required this.number, @required this.canDecrement});
 }
 
 class MyApp extends StatelessWidget {
