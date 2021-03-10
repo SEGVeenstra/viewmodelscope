@@ -1,3 +1,3 @@
-library viewmodel;
+library viewmodelscope;
 
-export 'src/viewmodel.dart';
+export 'src/viewmodelscope.dart';
