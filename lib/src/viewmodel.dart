@@ -35,13 +35,12 @@ abstract class ViewModel<TState> {
   }
 }
 
-class ViewModelConsumer<TViewmodel extends ViewModel, TState>
-    extends StatelessWidget {
+class ViewModelConsumer<TViewmodel extends ViewModel> extends StatelessWidget {
   final Widget child;
   final bool update;
 
-  final Widget Function(BuildContext, TState, Widget) builder;
-  final void Function(BuildContext, TState) listener;
+  final Widget Function(BuildContext, TViewmodel, Widget) builder;
+  final void Function(BuildContext, TViewmodel) listener;
 
   ViewModelConsumer({this.builder, this.listener, Widget child, bool update})
       : child = child ??= Container(),
@@ -53,22 +52,24 @@ class ViewModelConsumer<TViewmodel extends ViewModel, TState>
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.vm<TViewmodel>();
     return update
-        ? ValueListenableBuilder<TState>(
+        ? ValueListenableBuilder(
             child: child,
-            valueListenable: ViewModel.of<TViewmodel>(context).stateNotifier
-                as ValueNotifier<TState>,
-            builder: (context, state, child) {
+            valueListenable: viewModel.stateNotifier,
+            builder: (context, _, child) {
               if (listener != null) {
                 WidgetsBinding.instance
-                    .addPostFrameCallback((_) => listener(context, state));
+                    .addPostFrameCallback((_) => listener(context, viewModel));
               }
-              return builder == null ? child : builder(context, state, child);
+              return builder == null
+                  ? child
+                  : builder(context, viewModel, child);
             },
           )
         : builder == null
             ? child
-            : builder(context, ViewModel.of<TViewmodel>(context).state, child);
+            : builder(context, viewModel, child);
   }
 }
 

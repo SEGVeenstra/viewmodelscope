@@ -58,53 +58,59 @@ class MyHomePage extends StatelessWidget {
       appBar: AppBar(
         title: Text(title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            // Use a ViewModelConsumer to update the UI
-            ViewModelConsumer<NumberViewModel, NumberState>(
-              builder: (context, state, _) => Text(
-                '${state.number}',
+      body: ViewModelConsumer<NumberViewModel>(
+        // Use listeners to fire off Navigation, Dialogs, or any other action
+        // which is not allowed while building the UI.
+        listener: (context, vm) {
+          if (vm.s.number == 10)
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text('You reached 10!')));
+        },
+        builder: (context, vm, _) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                'You have pushed the button this many times:',
+              ),
+              Text(
+                '${vm.s.number}',
                 style: Theme.of(context).textTheme.headline4,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-      floatingActionButton: ViewModelConsumer<NumberViewModel, NumberState>(
-          builder: (context, state, _) {
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            FloatingActionButton(
-              onPressed: () {
-                // Use the BuildContext extension to find the nearest ViewModel of a
-                // specific Type to call methods on it.
-                context.vm<NumberViewModel>().increment();
-              },
-              tooltip: 'Increment',
-              child: Icon(Icons.add),
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            FloatingActionButton(
-              backgroundColor: state.canDecrement ? null : Colors.grey,
-              onPressed: state.canDecrement
-                  ? () {
-                      context.vm<NumberViewModel>().decrement();
-                    }
-                  : null,
-              tooltip: 'Increment',
-              child: Icon(Icons.remove),
-            ),
-          ],
-        );
-      }),
+      floatingActionButton: Fabs(),
+    );
+  }
+}
+
+class Fabs extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        FloatingActionButton(
+          // You can use the context extension to access the closest ViewModel
+          // when not inside the ViewModelConsumer's build function.
+          onPressed: () => context.vm<NumberViewModel>().increment(),
+          tooltip: 'Increment',
+          child: Icon(Icons.add),
+        ),
+        SizedBox(
+          height: 10,
+        ),
+        ViewModelConsumer<NumberViewModel>(builder: (context, vm, _) {
+          return FloatingActionButton(
+            backgroundColor: vm.s.canDecrement ? null : Colors.grey,
+            onPressed: vm.s.canDecrement ? () => vm.decrement() : null,
+            tooltip: 'Increment',
+            child: Icon(Icons.remove),
+          );
+        }),
+      ],
     );
   }
 }
