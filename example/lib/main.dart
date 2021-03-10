@@ -63,14 +63,16 @@ class MyHomePage extends StatelessWidget {
       appBar: AppBar(
         title: Text(title),
       ),
+      // Use a ViewModelConsumer to use the nearest ViewModel of the given Type.
       body: ViewModelConsumer<NumberViewModel>(
-        // Use listeners to fire off Navigation, Dialogs, or any other action
+        // Use listener to fire off Navigation, Dialogs, or any other action
         // that is not allowed while building the UI.
         listener: (context, vm) {
           if (vm.s.number == 10)
             ScaffoldMessenger.of(context)
                 .showSnackBar(SnackBar(content: Text('You reached 10!')));
         },
+        // Use builder to build your UI.
         builder: (context, vm, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -111,9 +113,9 @@ class Fabs extends StatelessWidget {
         SizedBox(
           height: 10,
         ),
+        // This next FAB disables whenever the number is 0.
+        // To make it update, we use the ViewModelConsumer.
         ViewModelConsumer<NumberViewModel>(builder: (context, vm, _) {
-          // This FAB disables whenever the number is 0.
-          // To make it update, we use the ViewModelConsumer.
           return FloatingActionButton(
             backgroundColor: vm.s.canDecrement ? null : Colors.grey,
             onPressed: vm.s.canDecrement
