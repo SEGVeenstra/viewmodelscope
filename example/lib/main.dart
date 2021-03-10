@@ -65,7 +65,7 @@ class MyHomePage extends StatelessWidget {
       ),
       body: ViewModelConsumer<NumberViewModel>(
         // Use listeners to fire off Navigation, Dialogs, or any other action
-        // which is not allowed while building the UI.
+        // that is not allowed while building the UI.
         listener: (context, vm) {
           if (vm.s.number == 10)
             ScaffoldMessenger.of(context)
