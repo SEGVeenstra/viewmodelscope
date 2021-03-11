@@ -10,7 +10,7 @@ class NumberState {
   final int number;
   final bool canDecrement;
 
-  NumberState({@required this.number, @required this.canDecrement});
+  NumberState({required this.number, required this.canDecrement});
 }
 
 // Define your ViewModel, pass it the Type of the State
@@ -53,7 +53,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatelessWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
@@ -124,7 +124,7 @@ class Fabs extends StatelessWidget {
                     // the ViewModel and call functions on it.
                     vm.decrement()
                 : null,
-            tooltip: 'Increment',
+            tooltip: 'Decrement',
             child: Icon(Icons.remove),
           );
         }),

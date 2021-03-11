@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 class ViewModelScope<TViewModel extends ViewModel> extends InheritedWidget {
   final TViewModel viewModel;
 
-  ViewModelScope({@required Widget child, @required this.viewModel})
+  ViewModelScope({required Widget child, required this.viewModel})
       : super(child: child);
 
   @override
@@ -18,7 +18,7 @@ abstract class ViewModel<TState> {
   TState get state => stateNotifier.value;
   TState get s => state;
 
-  ViewModel({@required TState initialState})
+  ViewModel({required TState initialState})
       : stateNotifier = ValueNotifier(initialState) {
     assert(initialState != null,
         "You must provide an initialState for ${this.runtimeType}");
@@ -31,7 +31,7 @@ abstract class ViewModel<TState> {
   static T of<T extends ViewModel>(BuildContext context) {
     final widget = context.findAncestorWidgetOfExactType<ViewModelScope<T>>();
     assert(widget != null, 'Could not find a ViewModelScope for Type: $T');
-    return widget.viewModel;
+    return widget!.viewModel;
   }
 }
 
@@ -39,10 +39,10 @@ class ViewModelConsumer<TViewmodel extends ViewModel> extends StatelessWidget {
   final Widget child;
   final bool update;
 
-  final Widget Function(BuildContext, TViewmodel, Widget) builder;
-  final void Function(BuildContext, TViewmodel) listener;
+  final Widget Function(BuildContext, TViewmodel, Widget)? builder;
+  final void Function(BuildContext, TViewmodel)? listener;
 
-  ViewModelConsumer({this.builder, this.listener, Widget child, bool update})
+  ViewModelConsumer({this.builder, this.listener, Widget? child, bool? update})
       : child = child ??= Container(),
         update = update ??= true,
         assert(builder != null || listener != null,
@@ -57,19 +57,19 @@ class ViewModelConsumer<TViewmodel extends ViewModel> extends StatelessWidget {
         ? ValueListenableBuilder(
             child: child,
             valueListenable: viewModel.stateNotifier,
-            builder: (context, _, child) {
+            builder: (context, dynamic _, child) {
               if (listener != null) {
-                WidgetsBinding.instance
-                    .addPostFrameCallback((_) => listener(context, viewModel));
+                WidgetsBinding.instance!
+                    .addPostFrameCallback((_) => listener!(context, viewModel));
               }
               return builder == null
-                  ? child
-                  : builder(context, viewModel, child);
+                  ? child!
+                  : builder!(context, viewModel, child!);
             },
           )
         : builder == null
             ? child
-            : builder(context, viewModel, child);
+            : builder!(context, viewModel, child);
   }
 }
 
