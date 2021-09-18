@@ -1,15 +1,57 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
-class ViewModelScope<TViewModel extends ViewModel> extends InheritedWidget {
-  final TViewModel viewModel;
+// class ViewModelScope<TViewModel extends ViewModel> extends InheritedWidget {
+//   final TViewModel viewModel;
 
-  ViewModelScope({required Widget child, required this.viewModel})
-      : super(child: child);
+//   ViewModelScope({required Widget child, required this.viewModel})
+//       : super(child: child);
+
+//   @override
+//   bool updateShouldNotify(covariant ViewModelScope<TViewModel> oldWidget) {
+//     return oldWidget.viewModel.state != viewModel.state;
+//   }
+// }
+
+class ViewModelScope<TViewModel extends ViewModel> extends StatefulWidget {
+  final Widget child;
+  final TViewModel viewModel;
+  const ViewModelScope({
+    required this.viewModel,
+    required this.child,
+    Key? key,
+  }) : super(key: key);
 
   @override
-  bool updateShouldNotify(covariant ViewModelScope<TViewModel> oldWidget) {
-    return oldWidget.viewModel.state != viewModel.state;
+  _ViewModelScopeState createState() =>
+      _ViewModelScopeState<TViewModel>(viewModel);
+}
+
+class _ViewModelScopeState<TViewModel extends ViewModel>
+    extends State<ViewModelScope> {
+  final TViewModel viewModel;
+
+  _ViewModelScopeState(this.viewModel);
+
+  @override
+  Widget build(BuildContext context) {
+    return ViewModelHolder<TViewModel>(
+      viewModel: this.viewModel,
+      child: widget.child,
+    );
+  }
+}
+
+class ViewModelHolder<TViewModel extends ViewModel> extends InheritedWidget {
+  final TViewModel viewModel;
+  ViewModelHolder({
+    required this.viewModel,
+    required Widget child,
+  }) : super(child: child);
+
+  @override
+  bool updateShouldNotify(covariant InheritedWidget oldWidget) {
+    return false;
   }
 }
 
@@ -29,7 +71,7 @@ abstract class ViewModel<TState> {
   }
 
   static T of<T extends ViewModel>(BuildContext context) {
-    final widget = context.findAncestorWidgetOfExactType<ViewModelScope<T>>();
+    final widget = context.findAncestorWidgetOfExactType<ViewModelHolder<T>>();
     assert(widget != null, 'Could not find a ViewModelScope for Type: $T');
     return widget!.viewModel;
   }
